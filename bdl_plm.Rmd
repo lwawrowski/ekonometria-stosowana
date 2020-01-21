@@ -1,0 +1,212 @@
+---
+title: "Ekonometria stosowana"
+subtitle: "BDL, modele panelowe"
+author: "&copy; Łukasz Wawrowski"
+date: ""
+output:
+  xaringan::moon_reader:
+    css: ["default.css", "default-fonts.css"]
+    lib_dir: libs
+    nature:
+      ratio: "16:9"
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+
+```{r include=FALSE}
+library(tidyverse)
+library(countdown)
+
+knitr::opts_chunk$set(message = FALSE, warning = FALSE, fig.width = 12, fig.height = 6)
+```
+
+# Pakiet bdl
+
+- korzysta z [API BDL](https://api.stat.gov.pl/Home/BdlApi)
+
+- limit: 
+
+- strona projektu na github
+
+---
+
+# Wyszukiwanie danych
+
+Hierarchia: Kategorie -> Grupy -> Podgrupy -> Tematy
+
+- `get_subjects()` - pobiera dane o kategoriach/grupach/podgrupach
+
+- `search_subjects()` - wyszukuje dane o tematach
+
+  - `name` - szukana fraza
+  - `subjectId` - kod narzędnego tematu
+  - `level` - poziom zasilenia danych
+  - `year` - lata obowiązywania
+  - `sort` - klucz sortowania
+  
+---
+
+# Poziom zasilenia danych
+
+- 0 - Polska
+- 1 - makroregion
+- 2 - województwo
+- 3 - region
+- 4 - podregion
+- 5 - powiat
+- 6 - gmina
+
+---
+
+# Jedna zmienna i wiele jednostek
+
+Pobieranie za pomocą funkcji `get_data_by_variable()`:
+
+- `varId` - kod zmiennej
+
+- `unitParentId` - kod jednostki nadrzędnej (opcjonalnie)
+
+- `unitLevel` - poziom zasilenia danych
+
+- `year` - lata obowiązywania
+
+---
+
+class: inverse
+
+# Zadanie
+
+Pobierz dane dla 
+
+---
+
+# Wiele zmiennych i jedna jednostka
+
+Pobieranie za pomocą funkcji `get_data_by_unit()`:
+
+- `unitId` - kod NUTS jednostki
+
+- `varId` - kod zmiennej lub kody zmiennych
+
+- `year` - lata obowiązywania
+
+- `type` - "code" (domyślnie) albo "label"
+
+---
+
+class: inverse
+
+# Zadanie
+
+Pobierz dane dla 
+
+---
+
+# Dane panelowe
+
+Uwzględnienie w analizie więcej niż jednego okresu dla badanych obiektów. 
+
+Zamiast $N$ obserwacji będzie $N \cdot T$ obserwacji, gdzie $T$ to liczba okresów.
+
+Dane są zbilansowane, jeżeli dla wszystkich $N$ jednostek jest $T$ obserwacji.
+
+Modele panelowe pozwalają na redukcję błędu pomiaru poprzez uwzględnienie zróżnicowania badanych obiektów.
+
+---
+
+# Klasyfikacja
+
+rysunek
+
+---
+
+# Pakiet plm
+
+Croissant Y, Millo G (2018). _Panel Data Econometrics with R: the plm package_. Wiley.
+
+
+
+---
+
+# Model bez efektów indywidualnych i czasowych
+
+Klasyczny model regresji liniowej
+
+$$y_{it}=\beta_0+\beta_1x_{1,it}+\beta_2x_{2,it}+...+e_{it}$$
+
+gdzie: $\beta_0$ to wyraz wolny w modelu, a $\beta_k$ są współczynnikami regresji przy odpowiednich zmiennych $x_{k,it}$, a $e_{it}$ jest resztą z modelu.
+
+Użycie tego modelu w środowisku R jest możliwe z wykorzystaniem wbudowanej funkcji `lm()` lub `plm()` z pakietu _plm_ dodając argument `model = "pooling"`.
+
+---
+
+# Model z efektami wewnątrzgrupowymi
+
+Brak wyrazu wolnego, natomiast zmienna objaśniana oraz zmienne objaśniające są wyrażone jako odchylenia cechy od wartości grupowych.
+
+$$(y_{it}-\bar{y}_{i\cdot})=\beta_1(x_{1,it}-\bar{x}_{1,i\cdot})+\beta_2(x_{2,it}-\bar{x}_{2,i\cdot})+...+(e_{it}-\bar{e}_{i\cdot})$$
+
+gdzie: $\bar{y}_{i\cdot},\bar{x}_{k,i\cdot},\bar{e}_{i\cdot}$ to odpowiednie średnie grupowe.
+
+Argument `model = "within"` w funkcji `plm()`.
+
+Wartości oszacowanych efektów grupowych można wyświetlić za pomocą funkcji `fixef()`.
+
+---
+
+# Test Walda
+
+Porównanie modelu bez efektów z modelem z efektami wewnątrzgrupowymi
+
+$H_0:$ lepszy model bez efektów
+
+$H_1:$ lepszy model z efektem
+
+Funkcja `pFtest()` z pakietu _plm_
+
+---
+
+# Model z efektami międzygrupowymi
+
+Zawiera wyraz wolny i bazuje wyłącznie na średnich grupowych analizowanych danych.
+
+$$\bar{y}_{i\cdot}=\beta_0 + \beta_1\bar{x}_{1,i\cdot}+\beta_2\bar{x}_{2,i\cdot}+...+e_i$$
+
+gdzie: $\bar{y}_{i\cdot},\bar{x}_{k,i\cdot},\bar{e}_{i\cdot}$ to odpowiednie średnie grupowe.
+
+Wartości współczynników $\beta$ mierzą wpływ zmian pomiędzy grupami na zmienną $y$. W tym przypadku nie uwzględnia się zmian wewnątrz grup.
+
+Uwzględnieniu w funkcji `plm()` argumentu `model = "between"`. 
+
+---
+
+# Model z efektami losowymi 
+
+Model ten zakłada istnienie efektów indywidualnych wynikających ze zmian losowych, nie zmieniających się w czasie.
+
+$$y_{it}=\beta_0+\beta_1x_{1,it}+\beta_2x_{2,it}+...+e_{it}$$
+
+gdzie: $e_{it}=v_i + \varepsilon_{it}$, a $v_i \sim IID(0, \sigma^2_\gamma)$.
+
+Zadeklarowanie parametru `model = "random"` w funkcji `plm()`. Funkcja `ranef()` zwraca wartości oszacowanych efektów losowych.
+
+---
+
+# Test Hausmanna
+
+Weryfikacja założeń modelu z efektami losowymi.
+
+$H_0:$ efekty indywidualne nie są skorelowane ze zmiennymi objaśniającymi
+
+$H_1:$ efekty indywidualne są skorelowane ze zmiennymi objaśniającymi
+
+Odrzucenie hipotezy zerowej wskazuje na lepsze własności modelu z efektami stałymi. 
+
+Ten test jest dostępny w ramach funkcji `phtest()`.
+
+---
+
+class: inverse, center, middle
+
+# Pytania?
