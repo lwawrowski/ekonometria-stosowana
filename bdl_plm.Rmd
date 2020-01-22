@@ -25,9 +25,11 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, fig.width = 12, fig.heig
 
 - korzysta z [API BDL](https://api.stat.gov.pl/Home/BdlApi)
 
-- limit: 
+- limity:
 
-- strona projektu na github
+![](img/bdlapi.png)
+
+- strona projektu na [github](https://github.com/statisticspoland/R_Package_to_API_BDL)
 
 ---
 
@@ -50,11 +52,17 @@ Hierarchia: Kategorie -> Grupy -> Podgrupy -> Tematy
 # Poziom zasilenia danych
 
 - 0 - Polska
+
 - 1 - makroregion
+
 - 2 - województwo
+
 - 3 - region
+
 - 4 - podregion
+
 - 5 - powiat
+
 - 6 - gmina
 
 ---
@@ -117,7 +125,7 @@ Modele panelowe pozwalają na redukcję błędu pomiaru poprzez uwzględnienie z
 
 # Klasyfikacja
 
-rysunek
+![](img/12_modele.png)
 
 ---
 
