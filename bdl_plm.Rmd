@@ -33,7 +33,7 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, fig.width = 12, fig.heig
 
 ---
 
-# Wyszukiwanie danych
+# Wyszukiwanie danych (I)
 
 Hierarchia: Kategorie -> Grupy -> Podgrupy -> Tematy
 
@@ -46,6 +46,22 @@ Hierarchia: Kategorie -> Grupy -> Podgrupy -> Tematy
   - `level` - poziom zasilenia danych
   - `year` - lata obowiązywania
   - `sort` - klucz sortowania
+  
+---
+
+# Wyszukiwanie danych (II)
+  
+- `get_variables()` - pobiera dane o zmiennej  
+  
+- `search_variables()` - wyszukuje dane o zmiennej
+
+---
+
+# Wyszukiwanie danych (III)
+
+- `get_units()` - pobiera dane o jednostce terytorialnej
+
+- `search_units()` - wyszukuje dane o jednostce terytorialnej
   
 ---
 
@@ -85,7 +101,7 @@ class: inverse
 
 # Zadanie
 
-Pobierz dane dla 
+Pobierz dane o przeciętnym miesięcznym wynagrodzeniu brutto na poziomie powiatów w 2017 roku.
 
 ---
 
@@ -107,7 +123,7 @@ class: inverse
 
 # Zadanie
 
-Pobierz dane dla 
+Pobierz dane dla województwa wielkopolskiego na temat liczby szkół podstawowych i uczniów w tych szkołach za lata 2015-2018.
 
 ---
 
@@ -129,11 +145,23 @@ Modele panelowe pozwalają na redukcję błędu pomiaru poprzez uwzględnienie z
 
 ---
 
-# Pakiet plm
+# Pakiet [plm]()
+
+Croissant, Y., Millo, G. (2008). _Panel Data Econometrics in R: The plm Package_. Journal of Statistical Software, 27 (2), 1-43.
+
+Kopczewska, K., Kopczewski, T., Wójcik, P. (2009). _Metody ilościowe w R: aplikacje ekonomiczne i finansowe_. CeDeWu.
 
 Croissant Y, Millo G (2018). _Panel Data Econometrics with R: the plm package_. Wiley.
 
+Hanck, C., Arnold, M., Gerber, A. i Schmelzer, M. (2019). _Introduction to Econometrics with R_. University of Duisburg-Essen. https://www.econometrics-with-r.org/
 
+---
+
+# Przykład
+
+Opracujemy model objaśniający **stopę bezrobocia rejestrowanego w przekroju województw dla lat 2010-2018**.
+
+Jako zmienną objaśniającą przyjmiemy **udział ludności w wieku produkcyjnym w ludności ogółem**.
 
 ---
 
@@ -149,6 +177,16 @@ Użycie tego modelu w środowisku R jest możliwe z wykorzystaniem wbudowanej fu
 
 ---
 
+# Model ze zmiennymi zerojedynkowymi
+
+Model LSDV (Least Squares Dummy Variables) w celu uwzględnienia stałych efektów indywidualnych wprowadzanych jest N zmiennych binarnych w taki sposób, że każda ze zmiennych przyjmuje wartość 1 dla danej jednostki i 0 dla pozostałych jednostek.
+
+$$y_{it}=\beta_0+\beta_1x_{1,it}+\beta_2x_{2,it}+...+\sum_{i=1}^{N}\alpha_id_{ij}+e_{it}$$
+
+Parametry modelu można szacować za pomocą KMNK. Przeszkodę w estymacji modelu może jednak stanowić znaczna liczba jednostek N. Pojawia się bowiem wymóg odwrócenia w trakcie szacunku macierzy stopnia N+K, gdzie K oznacza liczbę zmiennych objaśniających.
+
+---
+
 # Model z efektami wewnątrzgrupowymi
 
 Brak wyrazu wolnego, natomiast zmienna objaśniana oraz zmienne objaśniające są wyrażone jako odchylenia cechy od wartości grupowych.
@@ -156,6 +194,8 @@ Brak wyrazu wolnego, natomiast zmienna objaśniana oraz zmienne objaśniające s
 $$(y_{it}-\bar{y}_{i\cdot})=\beta_1(x_{1,it}-\bar{x}_{1,i\cdot})+\beta_2(x_{2,it}-\bar{x}_{2,i\cdot})+...+(e_{it}-\bar{e}_{i\cdot})$$
 
 gdzie: $\bar{y}_{i\cdot},\bar{x}_{k,i\cdot},\bar{e}_{i\cdot}$ to odpowiednie średnie grupowe.
+
+Model ten charakteryzuje większa liczba stopni swobody (w porównaniu z modelem LSDV zawierającym zmienne binarne) co wpływa na zmniejszenie wartości MSE i niewłaściwe oszacowania błędów standardowych parametrów. Brak wyrazu wolnego zniekształca wartość współczynnika determinacji.
 
 Argument `model = "within"` w funkcji `plm()`.
 
@@ -197,6 +237,8 @@ $$y_{it}=\beta_0+\beta_1x_{1,it}+\beta_2x_{2,it}+...+e_{it}$$
 
 gdzie: $e_{it}=v_i + \varepsilon_{it}$, a $v_i \sim IID(0, \sigma^2_\gamma)$.
 
+Efekty indywidualne poszerzają część stochastyczną modelu, nie stanowią szacowanych dla poszczególnych jednostek parametrów jak to ma miejsce w przypadku modeli FE. Do estymacji wykorzystuje się uogólnioną metodę najmniejszych kwadratów (UMNK). 
+
 Zadeklarowanie parametru `model = "random"` w funkcji `plm()`. Funkcja `ranef()` zwraca wartości oszacowanych efektów losowych.
 
 ---
@@ -212,6 +254,20 @@ $H_1:$ efekty indywidualne są skorelowane ze zmiennymi objaśniającymi
 Odrzucenie hipotezy zerowej wskazuje na lepsze własności modelu z efektami stałymi. 
 
 Ten test jest dostępny w ramach funkcji `phtest()`.
+
+---
+
+class: inverse
+
+# Zadanie
+
+Z wykorzystaniem danych mierzonych na poziomie powiatów opracuj model opisujący **przeciętne miesięczne wynagrodzenie brutto dla lat 2009-2018**. Jako zmienne objaśniające wybierz następujące cechy:
+
+-	podmioty wpisane do rejestru REGON na 10 tys. ludności,
+
+-	zasięg korzystania ze środowiskowej pomocy społecznej ogółem,
+
+-	drogi gminne i powiatowe o twardej nawierzchni na 10 tys. ludności.
 
 ---
 
