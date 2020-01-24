@@ -165,6 +165,12 @@ Jako zmienną objaśniającą przyjmiemy **udział ludności w wieku produkcyjny
 
 ---
 
+# Eksploracja danych
+
+<img src="img/ex1.png" height="500px">
+
+---
+
 # Model bez efektów indywidualnych i czasowych
 
 Klasyczny model regresji liniowej
@@ -181,9 +187,11 @@ Użycie tego modelu w środowisku R jest możliwe z wykorzystaniem wbudowanej fu
 
 Model LSDV (Least Squares Dummy Variables) w celu uwzględnienia stałych efektów indywidualnych wprowadzanych jest N zmiennych binarnych w taki sposób, że każda ze zmiennych przyjmuje wartość 1 dla danej jednostki i 0 dla pozostałych jednostek.
 
-$$y_{it}=\beta_0+\beta_1x_{1,it}+\beta_2x_{2,it}+...+\sum_{i=1}^{N}\alpha_id_{ij}+e_{it}$$
+$$y_{it}=\beta_1x_{1,it}+\beta_2x_{2,it}+...+\sum_{i=1}^{N}\alpha_id_{it}+e_{it}$$
 
 Parametry modelu można szacować za pomocą KMNK. Przeszkodę w estymacji modelu może jednak stanowić znaczna liczba jednostek N. Pojawia się bowiem wymóg odwrócenia w trakcie szacunku macierzy stopnia N+K, gdzie K oznacza liczbę zmiennych objaśniających.
+
+Nie można wprowadzić zmiennej stałej w czasie - współliniowość ze zmiennymi $d_it$.
 
 ---
 
