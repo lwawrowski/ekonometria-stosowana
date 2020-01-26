@@ -151,6 +151,9 @@ Croissant, Y., Millo, G. (2008). _Panel Data Econometrics in R: The plm Package_
 
 Kopczewska, K., Kopczewski, T., Wójcik, P. (2009). _Metody ilościowe w R: aplikacje ekonomiczne i finansowe_. CeDeWu.
 
+Gruszczyński, M. (red.) (2012). _Mikroekonometria. Modele i metody analizy danych indywidualnych_.  Wolter Kluwer Polska Sp. z o.o. Warszawa.
+https://www.ibuk.pl/fiszka/160370/mikroekonometria-modele-i-metody-analizy-danych-indywidualnych.html
+
 Croissant Y, Millo G (2018). _Panel Data Econometrics with R: the plm package_. Wiley.
 
 Hanck, C., Arnold, M., Gerber, A. i Schmelzer, M. (2019). _Introduction to Econometrics with R_. University of Duisburg-Essen. https://www.econometrics-with-r.org/
