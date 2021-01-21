@@ -50,7 +50,11 @@ Research areas:
 
 ---
 
-<iframe src="https://embed.polleverywhere.com/free_text_polls/706q0k7chqqLWbw0NIZmV?controls=none&short_poll=true" width="100%" height="100%"></iframe>
+<iframe src="https://embed.polleverywhere.com/multiple_choice_polls/XVOKhKNjb9cdOTWPPa7vZ?controls=none&short_poll=true" width="100%" height="100%"></iframe>
+
+---
+
+<iframe src="https://embed.polleverywhere.com/multiple_choice_polls/Snotiez2sRt3eIksXhDlu?controls=none&short_poll=true" width="800px" height="600px"></iframe>
 
 ---
 

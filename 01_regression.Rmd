@@ -1,6 +1,6 @@
 ---
-title: "Metody przetwarzania<br>i analizy danych"
-subtitle: "Regresja liniowa"
+title: "Applied econometrics"
+subtitle: "Linear regression"
 author: "&copy; Łukasz Wawrowski"
 date: ""
 output:
@@ -18,48 +18,60 @@ output:
 library(tidyverse)
 library(countdown)
 
-salary <- readxl::read_xlsx("../data/salary.xlsx")
+salary <- readxl::read_xlsx("data/salary.xlsx")
 
 knitr::opts_chunk$set(message = FALSE, warning = FALSE, fig.width = 12, fig.height = 6)
 ```
 
-# Regresja
+# Regression - history
 
-Funkcyjne odwzorowanie zależności pomiędzy badanymi zmiennymi. 
+- method of least squares (Legendre 1805, Gauss 1809)
 
-Cele analizy regresji:
+- term "regression" - Francis Galton in the nineteenth century
 
-- poznawcze - badanie związków przyczynowo-skutkowych
+- before 1970, it sometimes took up to 24 hours to receive the result from one regression
 
-- predycyjne - oszacowanie nieznanej wartości cechy
-
-Model regresji jest tylko przybliżeniem rzeczywistości!
+[Wikipedia 2021](https://en.wikipedia.org/wiki/Regression_analysis)
 
 ---
 
-# Regresja prosta
+# Regression
 
-Analiza dwóch cech:
+Statistical process for estimate the relationships between variables. 
 
-- zmienna objaśniana (zależna) oznaczana jako $y$
+Aims of regression analysis:
 
-- zmienna objaśniająca (niezależna) oznaczana jako $x$
+- discover causal relationships,
 
-Przykłady: 
+- prediction and forecasting.
 
-- zależność wielkości sprzedaży od wydatków na reklamę
-
-- zależność wynagrodzenia od lat doświadczenia
+The regression model is only an approximation of reality!
 
 ---
 
-# Przykład
+# Simple regression
 
-Zbiór [salary](http://www.wawrowski.edu.pl/data/salary.xlsx) zawiera informacje o rocznym wynagrodzeniu (w $) oraz liczbie lat doświadczenia. 
+Analysis of two variables
+
+- dependent (outcome) variable denoted as $y$
+
+- independent (predictors, covariates, features) variable denoted as $x$
+
+Examples: 
+
+- dependency between sales and spendings on advertisement 
+
+- dependency between salary and experience
 
 ---
 
-# Wykres rozrzutu
+# Example
+
+Dataset [salary](http://www.wawrowski.edu.pl/data/salary.xlsx) contains information about annual salary (in \$) and years experience.
+
+---
+
+# Scatter plot
 
 ```{r echo=FALSE}
 plot(salary)
@@ -69,290 +81,204 @@ plot(salary)
 
 class: inverse
 
-# Zadanie
+# Excercise
 
-Stwórz wykres rozrzutu dla zbioru `salary` z wykorzystaniem pakietu _ggplot2_.
+Create a scatter plot for `salary` dataset with _ggplot2_ package. 
 
 `r countdown(minutes = 5, seconds = 0, top = 0)`
 
 ---
 
-# Wykres rozrzutu
+# Scatter plot
 
 ```{r echo=FALSE}
 
 ggplot(salary, aes(x = YearsExperience, y = Salary)) + 
   geom_point() +
-  geom_smooth(method = "lm")
+  geom_smooth(method = "lm", se = FALSE)
 
 ```
 
 ---
 
-# Regresja prosta
+# Simple regression
 
-Weźmy pod uwagę prosty przykład dochodów i wydatków:
+General form of simple regression:
 
-```{r echo=FALSE}
-d <- data.frame(wydatki=c(2300,1800,2400,2300,2800,2000,2100),
-                dochody=c(2600,2400,2900,2800,3000,2500,2700))
+$$\hat{y}_{i}=\beta_{1}x_{i}+\beta_{0}$$
 
-d %>% knitr::kable()
-```
+where $\hat{y}$ is theoretical (predicted) value from model. 
 
----
+Therefore empirical (true) values $y$ are described by formula:
 
-# Regresja prosta
+$$y_{i}=\beta_{1}x_{i}+\beta_{0}+e_{i}$$
 
-Wykres rozrzutu
-
-```{r echo=FALSE}
-ggplot(d, aes(x = dochody, y = wydatki)) + 
-  geom_point(size = 2) +
-  xlab("dochody (X)") + 
-  ylab("wydatki (Y)") +
-  xlim(2400,3000) +
-  ylim(1600,3100) +
-  theme_light()
-```
+where $e_i$ is residual calculated as $e_{i}=y_{i}-\hat{y}_{i}$. 
 
 ---
 
-# Regresja prosta
-
-Spróbujmy teraz dopasować kilka prostych - mogą one przebiegać na wiele różnych sposobów.
-
-```{r echo=FALSE}
-ggplot(d, aes(x = dochody, y = wydatki)) + 
-  geom_point(size = 2) +
-  geom_hline(yintercept = 2243, color = "blue", alpha = 0.8, size = 1.1) +
-  geom_abline(slope = 1.9, intercept = -2780, color = "green", alpha = 0.8, size = 1.1) +
-  geom_abline(slope = 1.357, intercept = -1421.429, color = "red", alpha = 0.8, size = 1.1) +
-  xlab("dochody (X)") + 
-  ylab("wydatki (Y)") +
-  xlim(2400,3000) +
-  ylim(1600,3100) +
-  theme_light()
-```
-
----
-
-# Regresja prosta
-
-W następnym kroku obliczamy różnice pomiędzy istniejącymi punktami, a odpowiadającym im wartościom na prostej: 
-
-```{r echo=FALSE}
-d <- d %>% 
-  mutate(niebieska_y=dochody-2243,
-         zielona_y=1.9*dochody-2780,
-         czerwona_y=1.357*dochody-1421.429) %>% 
-  mutate(niebieska=(wydatki-niebieska_y)^2,
-         zielona=(wydatki-zielona_y)^2,
-         czerwona=(wydatki-czerwona_y)^2)
-
-line1 <- data.frame(x = c(d$dochody[1], d$dochody[1]), y=c(d$wydatki[1], d$czerwona_y[1]))
-line2 <- data.frame(x = c(d$dochody[2], d$dochody[2]), y=c(d$wydatki[2], d$czerwona_y[2]))
-line3 <- data.frame(x = c(d$dochody[3], d$dochody[3]), y=c(d$wydatki[3], d$czerwona_y[3]))
-line4 <- data.frame(x = c(d$dochody[4], d$dochody[4]), y=c(d$wydatki[4], d$czerwona_y[4]))
-line5 <- data.frame(x = c(d$dochody[5], d$dochody[5]), y=c(d$wydatki[5], d$czerwona_y[5]))
-line6 <- data.frame(x = c(d$dochody[6], d$dochody[6]), y=c(d$wydatki[6], d$czerwona_y[6]))
-line7 <- data.frame(x = c(d$dochody[7], d$dochody[7]), y=c(d$wydatki[7], d$czerwona_y[7]))
-
-ggplot(d, aes(x = dochody, y = wydatki)) + 
-  geom_point(size = 2) +
-  geom_hline(yintercept = 2243, color = "blue", alpha = 0.8, size = 1.1) +
-  geom_abline(slope = 1.9, intercept = -2780, color = "green", alpha = 0.8, size = 1.1) +
-  geom_abline(slope = 1.357, intercept = -1421.429, color = "red", alpha = 0.8, size = 1.1) +
-  geom_line(data = line1, aes(x=x, y=y), color = "grey60", size = 1.2) +
-  geom_line(data = line2, aes(x=x, y=y), color = "grey60", size = 1.2) +
-  geom_line(data = line3, aes(x=x, y=y), color = "grey60", size = 1.2) +
-  geom_line(data = line4, aes(x=x, y=y), color = "grey60", size = 1.2) +
-  geom_line(data = line5, aes(x=x, y=y), color = "grey60", size = 1.2) +
-  geom_line(data = line6, aes(x=x, y=y), color = "grey60", size = 1.2) +
-  geom_line(data = line7, aes(x=x, y=y), color = "grey60", size = 1.2) +
-  xlab("dochody (X)") + 
-  ylab("wydatki (Y)") +
-  xlim(2400,3000) +
-  ylim(1600,3100) +
-  theme_light()
-```
-
----
-
-# Regresja prosta
-
-Oznaczając $y_i$ jako rzeczywista wartość wydatków i $\hat{y_i}$ jako wartość leżącą na prostej zależy nam na minimalizowaniu wyrażenia $\sum\limits_{i=1}^{n}{(y_{i}-\hat{y}_{i})^2} \rightarrow min$. Różnica $y_{i}-\hat{y}_{i}$ jest nazywana resztą (ang. residual). Wyznaczając te wartości dla analizowanych przez nas prostych otrzymamy następujące wyniki:
-
-```{r echo=FALSE}
-d %>% 
-  select(6:8) %>% 
-  pivot_longer(1:3) %>% 
-  group_by(name) %>% 
-  summarise(suma_kwadratow_reszt=round(sum(value))) %>% 
-  arrange(suma_kwadratow_reszt) %>% 
-  knitr::kable()
-```
-
----
-
-# Regresja prosta
-
-Ogólna postać regresji prostej jest następująca:
-
-$$\hat{y}_{i}=b_{1}x_{i}+b_{0}$$
-
-gdzie $\hat{y}$ oznacza wartość teoretyczną, leżącą na wyznaczonej prostej. 
-
-Wobec tego wartości empiryczne (y) będą opisane formułą:
-
-$$y_{i}=b_{1}x_{i}+b_{0}+u_{i}$$
-
-w której $u_i$ oznacza składnik resztowy wyliczany jako $u_{i}=y_{i}-\hat{y}_{i}$. 
-
----
-
-# Regresja prosta w R
+# Simple regression in R
 
 ```{r eval=FALSE}
-lm(formula = zmienna_zalezna ~ zmienna_niezalezna, data = zbior_danych)
+lm(formula = dependent_var ~ independent_var, data = dataset)
 ```
 
-- `formula` - zdefiniowanie zależności funkcyjnej z wykorzystaniem tyldy
+- `formula` - description of model with tilde
 
-- `data` - zbiór danych
+- `data` - data frame with data
 
-Domyślnie funkcja `lm` zwraca tylko parametry $b$. 
+Function `lm` returns only $\beta$ coefficients as default. 
 
-Aby uzyskać szczegółowe informacje na temat modelu należy dodatkowo zastosować funkcję `summary()`:
+To obtain detailed information about model `summary()` function must be used.
 
 ```{r eval=FALSE}
-model <- lm(formula = zmienna_zalezna ~ zmienna_niezalezna, data = zbior_danych)
+model <- lm(formula = dependent_var ~ independent_var, data = dataset)
 summary(model)
 ```
 
 ---
 
-# Współczynniki $b$
+# $\beta$ coefficients
 
-**Współczynnik kierunkowy** $b_1$ informuje o ile przeciętne zmieni się wartość zmiennej objaśnianej $y$, gdy wartość zmiennej objaśniającej $x$ wzrośnie o jednostkę.
+A slope $\beta_1$ indicates how much the average value of the dependent variable (y) will change when the value of the independent variable (x) increases by a unit. In other words: as the value of the x variable increases by 1 the value of the y increases by a slope. 
 
-**Wyraz wolny** $b_0$ to wartość zmiennej objaśnianej $y$, w sytuacji w której wartość zmiennej objaśniającej $x$ będzie równa 0. Często interpretacja tego parametru nie ma sensu.
-
----
-
-# Dopasowanie modelu
-
-**Odchylenie standardowe składnika resztowego** jest pierwiastkiem z sumy kwadratów reszt podzielonej przez liczbę obserwacji pomniejszoną o 2:
-
-$$S_{u}=\sqrt{\frac{\sum\limits_{i=1}^{n}{(y_{i}-\hat{y}_{i})^2}}{n-2}}$$
-
-Miara ta określa, o ile, przeciętnie biorąc $+/-$, wartości empiryczne zmiennej objaśnianej odchylają się od wartości teoretycznych tej zmiennej, obliczonej na podstawie funkcji regresji.
+The intercept $\beta_0$ is the value of the dependent variable (y), if the value of the independent variable (x) is 0. Special care should be taken when interpreting this coefficient, because it is often meaningless. If x variable never is equal to 0, there is no interest in the intercept.
 
 ---
 
-# Dopasowanie modelu 
+# Regression assessment
 
-**Współczynnik determinacji** określa, jaki procent wariancji zmiennej objaśnianej został wyjaśniony przez funkcję regresji. $R^2$ przyjmuje wartości z przedziału $<0;1>$ ( $<0\%;100\%>$ ), przy czym model regresji tym lepiej opisuje zachowanie się badanej zmiennej objaśnianej, im $R^2$ jest bliższy jedności (bliższy 100%)
+Measure that describes fitting the regression function to the empirical data is the **standard error of the regression**
+
+$$S_{e}=\sqrt{\frac{\sum\limits_{i=1}^{n}{(y_{i}-\hat{y}_{i})^2}}{n-2}}$$
+
+The standard error of the regression represents the average distance that the observed values fall from the regression line. Conveniently, it tells you how wrong the regression model is on average using the units of the dependent variable. Smaller values are better because it indicates that the observations are closer to the fitted line.
+
+---
+
+# Regression assessment
+
+An equally important measure of fitting the regression function to the empirical data is the **coefficient of determination** or more commonly, the **R- squared**. The definition of R-squared is fairly straight-forward; it is the percentage of the dependent variable variation that is explained by a linear model.
 
 $$R^2=1-\frac{\sum\limits_{i=1}^{n}{(y_{i}-\hat{y}_{i})^2}}{\sum\limits_{i=1}^{n}{(y_{i}-\bar{y}_{i})^2}}$$
 
----
-
-# Test Walda
-
-- sprawdzenie istotności parametrów $b$
-
-- sprawdzenie istotności całego wektora parametrów $b$
+It determines what percentage of variable variance is explained by the regression function. $R^2$ takes values from $<0;1>$ or $<0\%;100\%>$. In general, the higher the R-squared, the better the model fits your data.
 
 ---
 
-# Predykcja
+# Wald test
 
-W celu wykorzystania modelu regresji do prognozowania należy stworzyć lub wczytać zbiór danych z danymi, dla których chcemy uzyskać wartości.
+- significance of each $\beta$ coefficient
+
+- significance of $\beta$ vector coefficients
+
+---
+
+# Prediction
+
+To predict with created model we need to import or create a dataset with $x$ values.
 
 ```{r eval=FALSE}
-nowe_dane <- data.frame(x=c(10,20,30))
+new_exp <- data.frame(x=c(5,7,9))
 
-predict(object = model, newdata = nowe_dane)
+predict(object = model, newdata = new_exp)
 ```
 
 ---
 
 class: inverse
 
-# Zadanie 
+# Excercise 
 
-Stwórz model regresji prostej objaśniający zależność sprzedaży od liczby klientów na podstawie [sklepu Rossmann](http://www.wawrowski.edu.pl/data/sklep77.xlsx). Jaka jest prognozowana sprzedaż dla 300, 700 i 1050 klientów?
+Create a simple regression model for dependency between sales and number of clients in [Rossmann store](data/store77.xlsx).
+
+1. What is the $R^2$ of this model?
+
+2. What is forecasting sales for 300, 7000 and 1050 clients?
 
 `r countdown(minutes = 10, seconds = 0, top = 0)`
 
+```{r eval=FALSE, include=FALSE}
+store77 <- readxl::read_xlsx("data/store77.xlsx")
+
+model <- lm(sales ~ no_clients, store77)
+
+summary(model)
+
+```
+
 ---
 
-# Regresja wieloraka
-
-Ogólna postać regresji wielorakiej jest następująca:
-
-$$\hat{y}_{i}=b_{1}x_{1i}+b_{2}x_{2i}+...+b_{k}x_{ki}+b_{0}$$
-
-W tym przypadku nie wyznaczamy prostej tylko $k$-wymiarową przestrzeń.
+<iframe src="https://embed.polleverywhere.com/multiple_choice_polls/rhJUGX0vYgvlBgZvfslap?controls=none&short_poll=true" width="100%" height="100%"></iframe>
 
 ---
 
-# Regresja trzech zmiennych
+# Multiple regression
+
+General form of multiple regression:
+
+$$\hat{y}_{i}=\beta_{1}x_{1i}+\beta_{2}x_{2i}+...+\beta_{k}x_{ki}+\beta_{0}$$
+
+In this case we are not looking for straight line but $k$-dimensional space.
+
+---
+
+# Regression of three variables
 
 ![](img/multiple_reg.png)
 
 ---
 
-# Przykład
+# Example
 
-Na podstawie zbioru [pracownicy](http://www.wawrowski.edu.pl/data/pracownicy.xlsx) zbuduj model objaśniający wysokość bieżącego wynagrodzenia.
+Based on dataset [employees](data/employees.xlsx) create a model for variable current wage.
 
-- id - kod pracownika
-- plec - płeć pracownika (0 - mężczyzna, 1 - kobieta)
-- data_urodz - data urodzenia
-- edukacja - wykształcenie (w latach nauki)
-- kat_pracownika - grupa pracownicza (1 - specjalista, 2 - menedżer, 3 - konsultant)
-- bwynagrodzenie - bieżące wynagrodzenie
-- pwynagrodzenie - początkowe wynagrodzenie
-- staz - staż pracy (w miesiącach)
-- doswiadczenie - poprzednie zatrudnienie (w miesiącach)
-- zwiazki - przynależność do związków zawodowych (0 - nie, 1 - tak)
-- wiek - wiek (w latach)
+- id - identifier of employee
+- gender (0 - male, 1 - woman)
+- birth_date - date of birth
+- education - years of education
+- employee_category (1 - specialist, 2 - manager, 3 - consultant)
+- **current_salary**
+- starting_salary
+- experience (in months)
+- former_employment (in months)
+- unions - membership of unions (0 - no, 1 - yes)
+- age (w years)
 
 ---
 
 class: inverse
 
-# Zadanie
+# Excercise
 
-Na bazie zbioru pracownicy stwórz nowy zbiór danych, który nie będzie zawierał niepotrzebnych zmiennych oraz braków danych.
+Based on employee dataset create a new one without missing data and only with necessary variables.
 
 `r countdown(minutes = 5, seconds = 0, top = 0)`
 
 ---
 
-# Dychotomizacja zmiennej
+# Dichotomization of a variable
 
-Zamiana zmiennej ilościowej zawierającej $k$ wariantów na $k-1$ zmiennych zerojedynkowych.
+Converting a quantitative variable containing $k$ variants to $k-1$ zero-one variables.
 
 .pull-left[
-Oryginalny zbiór
 
-| id | stanowisko |
+Original dataset
+
+| id | position |
 |----|------------|
-| 1  | specjalista|
-| 2  | menedżer   |
-| 3  | specjalista|
-| 4  | konsultant |
-| 5  | konsultant |
+| 1  | specialist |
+| 2  | manager    |
+| 3  | specialist |
+| 4  | consultant |
+| 5  | consultant |
 
 ]
 
 .pull-right[
-Zmienna zerojedynkowa
+Zero-one variable
 
-| id | menedżer | konsultant |
+| id | manager | consultant |
 |----|----------|------------|
 | 1  | 0 | 0 |
 | 2  | 1 | 0 |
@@ -364,71 +290,134 @@ Zmienna zerojedynkowa
 
 ---
 
-# Dychotomizacja zmiennej
+# Dichotomization of a variable
 
-Współczynnik $b$ dla zmiennej dychotomicznej informuje o ile przeciętne zmieni się wartość zmiennej objaśnianej $y$ w odniesieniu do kategorii bazowej dychotomicznej zmiennej $x$.
+The $\beta$ coefficient for a dichotomous variable shows how much the average will change in the value of the dependent variable $y$ with respect to the reference (base) category of the $x$ variable.
 
-Przykładowo, przyjmując za kategorię bazową stanowisko _specjalista_, współczynnik $b$ dla kategorii _menedżer_ poinformuje o ile średnio wartość bieżącego wynagrodzenia jest wyższa lub niższa od _specjalisty_.
-
----
-
-# Badanie współliniowości
-
-Pakiet [corrplot](https://cran.r-project.org/web/packages/corrplot/) służący do wizualizacji współczynnika korelacji.
-
-Współczynnik korelacji informuje o sile zależności pomiędzy dwoma cechami ilościowymi. Jest wielkością unormowaną, przyjmuje wartości z przedziału $r\in<-1;1>$.
-
-Jeśli:
-
-- $r_{xy}=1$ --- korelacja dodatnia doskonała,
-- $0<r_{xy}<1$ --- korelacja dodatnia niedoskonała (słaba/umiarkowana/silna)
-- $r_{xy}=0$ --- brak zależności,
-- $-1<r_{xy}<0$ --- korelacja ujemna niedoskonała (słaba/umiarkowana/silna)
-- $r_{xy}=-1$ --- korelacja ujemna doskonała.
+For example, assuming the position of _specialist_ as the base category, the $\beta$ coefficient for the _manager_ category will inform you how much on average the value of current salary is higher or lower than _specialist_.
 
 ---
 
-# Dobór i weryfikacja modelu
+# Collinearity diagnostics
 
-Pakiet [olsrr](https://cran.r-project.org/web/packages/olsrr/) zawiera narzędzia do analizy modeli liniowych.
+[corrplot](https://cran.r-project.org/web/packages/corrplot/) package can be used to analyze and visualize coefficient of correlation.
 
-- wybór cech do modelu
+The correlation coefficient shows the strength and direction of the relationship between two quantitative variables. It is a normalized value and it takes values from the interval $r\in<-1;1>$.
 
-- badanie współliniowości
+- $r_{xy}=1$ - perfect positive correlation,
 
-- badanie normalności
+- $0<r_{xy}<1$ - weak/moderate/strong positive correlation,
 
-- analiza wartości odstających
+- $r_{xy}=0$ - no correlation,
 
----
+- $-1<r_{xy}<0$ - weak/moderate/strong negative correlation,
 
-# Dobór modelu
-
-Wyróżnia się trzy podejścia do tego zagadnienia:
-
-- ekspercki dobór cech
-
-- budowa wszystkich możliwych modeli i wybór najlepszego według określonego kryterium
-
-- regresja krokowa
+- $r_{xy}=-1$ - perfect negative correlation.
 
 ---
 
-# Badanie współliniowości
+# Model diagnostics
 
-**Współczynnik tolerancji** wskazuje na procent niewyjaśnionej zmienności danej zmiennej przez pozostałe zmienne objaśniające.
+[olsrr](https://cran.r-project.org/web/packages/olsrr/) package contains functions for linear models.
 
-**Współczynnik VIF** jest obliczany na podstawie wartości współczynnika tolerancji i wskazuje o ile wariancja szacowanego współczynnika regresji jest podwyższona z powodu współliniowości danej zmiennej objaśniającej z pozostałymi zmiennymi objaśniającymi. Wartość współczynnika VIF powyżej 4 należy uznać za wskazującą na współliniowość.
+- model selection
+
+- collinearity diagnostics
+
+- normality assessment
+
+- outlier detection
+
+There are also packages for other methods at [rsquared academy](https://pkgs.rsquaredacademy.com/).
+
+---
+
+# Model selection
+
+There are three approaches to model selection:
+
+- expert selection
+
+- analysis of all possible models $2^p-1$
+
+```r
+ols_step_all_possible(model)
+```
+
+- stepwise regression
+
+```r
+ols_step_both_aic(model)
+
+```
+
+---
+
+# Collinearity diagnostics
+
+```r
+ols_vif_tol(model)
+```
+
+**Tolerance** percent of variance in the predictor that cannot be accounted for by other predictors.
+
+**Variance Inflation Factor** measures the inflation in the variances of the parameter estimates due to collinearities that exist among the predictors. The general rule is that VIFs exceeding 4 warrant further investigation, while VIFs exceeding 10 are signs of serious multicollinearity requiring correction. VIF is calculated as 1/Tolerance
+
+---
+
+# Normality assessment
+
+Multiple regression assumes that the residuals are normally distributed.
+
+- histogram
+
+```r
+ols_plot_resid_hist(model)
+```
+
+- normality tests
+
+```r
+ols_test_normality(model)
+```
+
+- quantile-quantile plots
+
+```r
+ols_plot_resid_qq(model)
+```
+
+---
+
+# Outliers detection
+
+- Cook Distance - threshold calculated as $4/n$
+
+```r
+ols_plot_cooksd_bar(model)
+```
+
+- Studentized residual - threshold is 3 (in absolute value)
+
+```r
+ols_plot_resid_stud(model)
+```
+
+- Studentized residual - threshold is 2 (in absolute value)
+
+```r
+ols_plot_resid_stud_fit(model)
+```
 
 ---
 
 class: inverse
 
-# Zadanie
+# Exercise
 
-Na podstawie zbioru dotyczącego [50 startupów](http://www.wawrowski.edu.pl/data/startups.xlsx) określ jakie czynniki wpływają na przychód startupów. 
+Base on [50 startups](http://www.wawrowski.edu.pl/data/startups.xlsx) dataset create the best possible model. 
 
-Przyda się pakiet _janitor_ i funkcja `clean_names()` do uporządkowania nazw kolumn.
+Use _janitor_ package and `clean_names()` function to clean variable names.
 
 `r countdown(minutes = 10, seconds = 0, top = 0)`
 
@@ -436,4 +425,4 @@ Przyda się pakiet _janitor_ i funkcja `clean_names()` do uporządkowania nazw k
 
 class: inverse, center, middle
 
-# Pytania?
+# Questions?

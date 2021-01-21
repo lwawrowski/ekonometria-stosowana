@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Applied econometrics</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="© Łukasz Wawrowski" />
+    <script src="libs/header-attrs-2.5/header-attrs.js"></script>
+    <link href="libs/countdown-0.3.5/countdown.css" rel="stylesheet" />
+    <script src="libs/countdown-0.3.5/countdown.js"></script>
+    <link rel="stylesheet" href="default.css" type="text/css" />
+    <link rel="stylesheet" href="default-fonts.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Applied econometrics
+## Linear regression
+### © Łukasz Wawrowski
+
+---
+
+
+
+
+# Regression - history
+
+- method of least squares (Legendre 1805, Gauss 1809)
+
+- term "regression" - Francis Galton in the nineteenth century
+
+- before 1970, it sometimes took up to 24 hours to receive the result from one regression
+
+[Wikipedia 2021](https://en.wikipedia.org/wiki/Regression_analysis)
+
+---
+
+# Regression
+
+Statistical process for estimate the relationships between variables. 
+
+Aims of regression analysis:
+
+- discover causal relationships,
+
+- prediction and forecasting.
+
+The regression model is only an approximation of reality!
+
+---
+
+# Simple regression
+
+Analysis of two variables
+
+- dependent (outcome) variable denoted as `\(y\)`
+
+- independent (predictors, covariates, features) variable denoted as `\(x\)`
+
+Examples: 
+
+- dependency between sales and spendings on advertisement 
+
+- dependency between salary and experience
+
+---
+
+# Example
+
+Dataset [salary](http://www.wawrowski.edu.pl/data/salary.xlsx) contains information about annual salary (in \$) and years experience.
+
+---
+
+# Scatter plot
+
+![](01_regression_files/figure-html/unnamed-chunk-2-1.png)&lt;!-- --&gt;
+
+---
+
+class: inverse
+
+# Excercise
+
+Create a scatter plot for `salary` dataset with _ggplot2_ package. 
+
+<div class="countdown" id="timer_6009a90e" style="top:0;right:0;" data-warnwhen="0">
+<code class="countdown-time"><span class="countdown-digits minutes">05</span><span class="countdown-digits colon">:</span><span class="countdown-digits seconds">00</span></code>
+</div>
+
+---
+
+# Scatter plot
+
+![](01_regression_files/figure-html/unnamed-chunk-3-1.png)&lt;!-- --&gt;
+
+---
+
+# Simple regression
+
+General form of simple regression:
+
+`$$\hat{y}_{i}=\beta_{1}x_{i}+\beta_{0}$$`
+
+where `\(\hat{y}\)` is theoretical (predicted) value from model. 
+
+Therefore empirical (true) values `\(y\)` are described by formula:
+
+`$$y_{i}=\beta_{1}x_{i}+\beta_{0}+e_{i}$$`
+
+where `\(e_i\)` is residual calculated as `\(e_{i}=y_{i}-\hat{y}_{i}\)`. 
+
+---
+
+# Simple regression in R
+
+
+```r
+lm(formula = dependent_var ~ independent_var, data = dataset)
+```
+
+- `formula` - description of model with tilde
+
+- `data` - data frame with data
+
+Function `lm` returns only `\(\beta\)` coefficients as default. 
+
+To obtain detailed information about model `summary()` function must be used.
+
+
+```r
+model &lt;- lm(formula = dependent_var ~ independent_var, data = dataset)
+summary(model)
+```
+
+---
+
+# `\(\beta\)` coefficients
+
+A slope `\(\beta_1\)` indicates how much the average value of the dependent variable (y) will change when the value of the independent variable (x) increases by a unit. In other words: as the value of the x variable increases by 1 the value of the y increases by a slope. 
+
+The intercept `\(\beta_0\)` is the value of the dependent variable (y), if the value of the independent variable (x) is 0. Special care should be taken when interpreting this coefficient, because it is often meaningless. If x variable never is equal to 0, there is no interest in the intercept.
+
+---
+
+# Regression assessment
+
+Measure that describes fitting the regression function to the empirical data is the **standard error of the regression**
+
+`$$S_{e}=\sqrt{\frac{\sum\limits_{i=1}^{n}{(y_{i}-\hat{y}_{i})^2}}{n-2}}$$`
+
+The standard error of the regression represents the average distance that the observed values fall from the regression line. Conveniently, it tells you how wrong the regression model is on average using the units of the dependent variable. Smaller values are better because it indicates that the observations are closer to the fitted line.
+
+---
+
+# Regression assessment
+
+An equally important measure of fitting the regression function to the empirical data is the **coefficient of determination** or more commonly, the **R- squared**. The definition of R-squared is fairly straight-forward; it is the percentage of the dependent variable variation that is explained by a linear model.
+
+`$$R^2=1-\frac{\sum\limits_{i=1}^{n}{(y_{i}-\hat{y}_{i})^2}}{\sum\limits_{i=1}^{n}{(y_{i}-\bar{y}_{i})^2}}$$`
+
+It determines what percentage of variable variance is explained by the regression function. `\(R^2\)` takes values from `\(&lt;0;1&gt;\)` or `\(&lt;0\%;100\%&gt;\)`. In general, the higher the R-squared, the better the model fits your data.
+
+---
+
+# Wald test
+
+- significance of each `\(\beta\)` coefficient
+
+- significance of `\(\beta\)` vector coefficients
+
+---
+
+# Prediction
+
+To predict with created model we need to import or create a dataset with `\(x\)` values.
+
+
+```r
+new_exp &lt;- data.frame(x=c(5,7,9))
+
+predict(object = model, newdata = new_exp)
+```
+
+---
+
+class: inverse
+
+# Excercise 
+
+Create a simple regression model for dependency between sales and number of clients in [Rossmann store](data/store77.xlsx).
+
+1. What is the `\(R^2\)` of this model?
+
+2. What is forecasting sales for 300, 7000 and 1050 clients?
+
+<div class="countdown" id="timer_6009aa0e" style="top:0;right:0;" data-warnwhen="0">
+<code class="countdown-time"><span class="countdown-digits minutes">10</span><span class="countdown-digits colon">:</span><span class="countdown-digits seconds">00</span></code>
+</div>
+
+
+
+---
+
+&lt;iframe src="https://embed.polleverywhere.com/multiple_choice_polls/rhJUGX0vYgvlBgZvfslap?controls=none&amp;short_poll=true" width="100%" height="100%"&gt;&lt;/iframe&gt;
+
+---
+
+# Multiple regression
+
+General form of multiple regression:
+
+`$$\hat{y}_{i}=\beta_{1}x_{1i}+\beta_{2}x_{2i}+...+\beta_{k}x_{ki}+\beta_{0}$$`
+
+In this case we are not looking for straight line but `\(k\)`-dimensional space.
+
+---
+
+# Regression of three variables
+
+![](img/multiple_reg.png)
+
+---
+
+# Example
+
+Based on dataset [employees](data/employees.xlsx) create a model for variable current wage.
+
+- id - identifier of employee
+- gender (0 - male, 1 - woman)
+- birth_date - date of birth
+- education - years of education
+- employee_category (1 - specialist, 2 - manager, 3 - consultant)
+- **current_salary**
+- starting_salary
+- experience (in months)
+- former_employment (in months)
+- unions - membership of unions (0 - no, 1 - yes)
+- age (w years)
+
+---
+
+class: inverse
+
+# Excercise
+
+Based on employee dataset create a new one without missing data and only with necessary variables.
+
+<div class="countdown" id="timer_6009ac44" style="top:0;right:0;" data-warnwhen="0">
+<code class="countdown-time"><span class="countdown-digits minutes">05</span><span class="countdown-digits colon">:</span><span class="countdown-digits seconds">00</span></code>
+</div>
+
+---
+
+# Dichotomization of a variable
+
+Converting a quantitative variable containing `\(k\)` variants to `\(k-1\)` zero-one variables.
+
+.pull-left[
+
+Original dataset
+
+| id | position |
+|----|------------|
+| 1  | specialist |
+| 2  | manager    |
+| 3  | specialist |
+| 4  | consultant |
+| 5  | consultant |
+
+]
+
+.pull-right[
+Zero-one variable
+
+| id | manager | consultant |
+|----|----------|------------|
+| 1  | 0 | 0 |
+| 2  | 1 | 0 |
+| 3  | 0 | 0 |
+| 4  | 0 | 1 |
+| 5  | 0 | 1 |
+
+]
+
+---
+
+# Dichotomization of a variable
+
+The `\(\beta\)` coefficient for a dichotomous variable shows how much the average will change in the value of the dependent variable `\(y\)` with respect to the reference (base) category of the `\(x\)` variable.
+
+For example, assuming the position of _specialist_ as the base category, the `\(\beta\)` coefficient for the _manager_ category will inform you how much on average the value of current salary is higher or lower than _specialist_.
+
+---
+
+# Collinearity diagnostics
+
+[corrplot](https://cran.r-project.org/web/packages/corrplot/) package can be used to analyze and visualize coefficient of correlation.
+
+The correlation coefficient shows the strength and direction of the relationship between two quantitative variables. It is a normalized value and it takes values from the interval `\(r\in&lt;-1;1&gt;\)`.
+
+- `\(r_{xy}=1\)` - perfect positive correlation,
+
+- `\(0&lt;r_{xy}&lt;1\)` - weak/moderate/strong positive correlation,
+
+- `\(r_{xy}=0\)` - no correlation,
+
+- `\(-1&lt;r_{xy}&lt;0\)` - weak/moderate/strong negative correlation,
+
+- `\(r_{xy}=-1\)` - perfect negative correlation.
+
+---
+
+# Model diagnostics
+
+[olsrr](https://cran.r-project.org/web/packages/olsrr/) package contains functions for linear models.
+
+- model selection
+
+- collinearity diagnostics
+
+- normality assessment
+
+- outlier detection
+
+There are also packages for other methods at [rsquared academy](https://pkgs.rsquaredacademy.com/).
+
+---
+
+# Model selection
+
+There are three approaches to model selection:
+
+- expert selection
+
+- analysis of all possible models `\(2^p-1\)`
+
+```r
+ols_step_all_possible(model)
+```
+
+- stepwise regression
+
+```r
+ols_step_both_aic(model)
+
+```
+
+---
+
+# Collinearity diagnostics
+
+```r
+ols_vif_tol(model)
+```
+
+**Tolerance** percent of variance in the predictor that cannot be accounted for by other predictors.
+
+**Variance Inflation Factor** measures the inflation in the variances of the parameter estimates due to collinearities that exist among the predictors. The general rule is that VIFs exceeding 4 warrant further investigation, while VIFs exceeding 10 are signs of serious multicollinearity requiring correction. VIF is calculated as 1/Tolerance
+
+---
+
+# Normality assessment
+
+Multiple regression assumes that the residuals are normally distributed.
+
+- histogram
+
+```r
+ols_plot_resid_hist(model)
+```
+
+- normality tests
+
+```r
+ols_test_normality(model)
+```
+
+- quantile-quantile plots
+
+```r
+ols_plot_resid_qq(model)
+```
+
+---
+
+# Outliers detection
+
+- Cook Distance - threshold calculated as `\(4/n\)`
+
+```r
+ols_plot_cooksd_bar(model)
+```
+
+- Studentized residual - threshold is 3 (in absolute value)
+
+```r
+ols_plot_resid_stud(model)
+```
+
+- Studentized residual - threshold is 2 (in absolute value)
+
+```r
+ols_plot_resid_stud_fit(model)
+```
+
+---
+
+class: inverse
+
+# Exercise
+
+Base on [50 startups](http://www.wawrowski.edu.pl/data/startups.xlsx) dataset create the best possible model. 
+
+Use _janitor_ package and `clean_names()` function to clean variable names.
+
+<div class="countdown" id="timer_6009a9b1" style="top:0;right:0;" data-warnwhen="0">
+<code class="countdown-time"><span class="countdown-digits minutes">10</span><span class="countdown-digits colon">:</span><span class="countdown-digits seconds">00</span></code>
+</div>
+
+---
+
+class: inverse, center, middle
+
+# Questions?
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"ratio": "16:9",
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
