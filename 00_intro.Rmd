@@ -1,0 +1,87 @@
+---
+title: "Applied econometrics"
+subtitle: "Introduction"
+author: "&copy; Łukasz Wawrowski"
+date: ""
+output:
+  xaringan::moon_reader:
+    css: ["default.css", "default-fonts.css"]
+    lib_dir: libs
+    nature:
+      ratio: "16:9"
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+
+# dr Łukasz Wawrowski
+
+[wawrowski.edu.pl](http://www.wawrowski.edu.pl/)
+
+.pull-left[
+
+Current employment:
+
+- [Poznań University of Economics and Business](http://statystyka.ue.poznan.pl/)
+- [Research Network Łukasiewicz](http://ibemag.pl/pl/)
+- [QED Software](https://qed.pl/)
+
+Former employment:
+
+- [Statistical Office in Poznań](https://poznan.stat.gov.pl/osrodki/osrodek-statystyki-malych-obszarow-1088/)
+- [DOJI S.A.](https://doji.com.pl/)
+
+]
+
+.pull-right[
+
+Research areas:
+
+- machine learning
+- small area estimation
+- poverty
+- survey methodology
+
+]
+
+---
+
+<iframe src="https://embed.polleverywhere.com/multiple_choice_polls/dxI4NSnoi4geavlrgyOYA?controls=none&short_poll=true" width="100%" height="100%"></iframe>
+
+---
+
+<iframe src="https://embed.polleverywhere.com/free_text_polls/706q0k7chqqLWbw0NIZmV?controls=none&short_poll=true" width="100%" height="100%"></iframe>
+
+---
+
+# Scope
+
+.pull-left[
+
+Three meetings:
+
+- 22.01.2021
+
+- 29.01.2021
+
+- 5.02.2021
+
+]
+
+.pull-right[
+
+Topics:
+
+- linear regression
+
+- Local Data Bank
+
+- linear models for panel data
+
+]
+
+---
+
+class: inverse, center, middle
+
+# Questions?
