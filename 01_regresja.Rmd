@@ -1,0 +1,216 @@
+---
+title: "Regresja liniowa"
+output: html_notebook
+---
+
+```{r}
+library(tidyverse)
+
+salary <- read_csv2("data/salary.csv")
+
+plot(salary)
+```
+
+```{r}
+ggplot(data = salary, aes(x = YearsExperience, y = Salary)) +
+  geom_point() +
+  geom_smooth(method = "lm")
+```
+
+
+```{r}
+salary_model <- lm(formula = Salary ~ YearsExperience, data = salary)
+salary_model
+```
+
+- b1 = 9450 - wzrost doświadczenia o rok wpływa na wzrost wynagrodzenia średnio o 9450 $.
+
+- b0 = 25792 - pracownik bez doświadczenia uzyska średnią pensję 25792 $
+
+```{r}
+summary(salary_model)
+```
+
+Wartości rzeczywiste różnią się od wartości z modelu średnio o +/- 5788 $.
+
+Współczynnik R2 wynosi 95,7%, co oznacza, że doświadczenie wyjaśnia 95,7% zmienności wynagrodzenia.
+
+```{r}
+new <- data.frame(YearsExperience=c(2.5, 8, 10))
+
+predict(salary_model, newdata = new)
+```
+
+```{r}
+new <- data.frame(YearsExperience=c(2.5, 8, 10)) %>% 
+  mutate(salary=predict(salary_model, newdata = .))
+
+new
+```
+
+```{r}
+salary_pred <- salary %>% 
+  mutate(salary_hat=predict(salary_model),
+         resid=Salary-salary_hat)
+
+summary(salary_pred)
+```
+
+## Zadanie
+
+```{r}
+sklep77 <- read_csv2("data/sklep77.csv")
+
+sklep <- sklep77 %>% 
+  filter(czy_otwarty == "Tak")
+```
+
+```{r}
+ggplot(data = sklep, aes(x = liczba_klientow, y = sprzedaz)) +
+  geom_point() +
+  geom_smooth(method = "lm")
+```
+
+```{r}
+sklep_model <- lm(formula = sprzedaz ~ liczba_klientow, data = sklep)
+summary(sklep_model)
+```
+
+# Regresja wieloraka
+
+```{r}
+pracownicy <- readxl::read_excel("data/pracownicy.xlsx")
+
+summary(pracownicy)
+```
+
+```{r}
+pracownicy2 <- pracownicy %>% 
+  select(-id, -data_urodz) %>% 
+  filter(!is.na(wiek)) %>% 
+  mutate(plec=as.factor(plec),
+         kat_pracownika=as.factor(kat_pracownika),
+         zwiazki=as.factor(zwiazki))
+
+summary(pracownicy2)
+```
+
+```{r}
+options(scipen = 10)
+prac_model <- lm(formula = bwynagrodzenie ~ ., data = pracownicy2)
+summary(prac_model)
+```
+
+
+```{r}
+plot(pracownicy2$bwynagrodzenie, pracownicy2$wiek)
+```
+
+```{r}
+plot(pracownicy2$doswiadczenie, pracownicy2$wiek)
+```
+
+```{r}
+library(corrplot)
+
+korelacje <- pracownicy2 %>% 
+  select(-plec, -kat_pracownika, -zwiazki) %>% 
+  cor()
+
+corrplot(corr = korelacje, method = "number", type = "upper")
+```
+
+```{r}
+library(olsrr)
+
+wszystkie_modele <- ols_step_all_possible(prac_model)
+
+# regresja krokowa
+ols_step_both_aic(prac_model)
+```
+
+```{r}
+wybrany_model <- lm(bwynagrodzenie ~ pwynagrodzenie + kat_pracownika +
+                      doswiadczenie + staz + edukacja + plec, 
+                    data = pracownicy2)
+summary(wybrany_model)
+```
+
+```{r}
+ols_vif_tol(wybrany_model)
+```
+
+30% zmienności początkowego wynagrodzenia nie jest wyjaśnione przez pozostałe zmienne w modelu.
+
+```{r}
+pracownicy2_std <- pracownicy2 %>% 
+  mutate_if(is.numeric, scale)
+
+wybrany_model_std <- lm(bwynagrodzenie ~ pwynagrodzenie + kat_pracownika +
+                      doswiadczenie + staz + edukacja + plec, 
+                    data = pracownicy2_std)
+summary(wybrany_model_std)
+```
+
+```{r}
+ols_plot_resid_hist(wybrany_model)
+```
+
+```{r}
+ols_test_normality(wybrany_model)
+```
+
+Rozkład reszt nie jest rozkładem normalnym.
+
+```{r}
+ols_plot_resid_qq(wybrany_model)
+```
+
+```{r}
+cook <- ols_plot_cooksd_bar(wybrany_model)
+```
+
+```{r}
+stud3 <- ols_plot_resid_stud(wybrany_model)
+```
+
+```{r}
+stud2 <- ols_plot_resid_stud_fit(wybrany_model)
+```
+
+```{r}
+outliers <- cook$outliers$observation
+
+pracownicy_out <- pracownicy2[-outliers,]
+
+wybrany_model_out <- lm(bwynagrodzenie ~ pwynagrodzenie + kat_pracownika +
+                      doswiadczenie + staz + edukacja + plec, 
+                    data = pracownicy_out)
+summary(wybrany_model_out)
+```
+
+```{r}
+ols_plot_resid_qq(wybrany_model_out)
+```
+
+```{r}
+ols_test_normality(wybrany_model_out)
+```
+
+# Zadanie
+
+```{r}
+startups <- readxl::read_xlsx("data/startups.xlsx")
+
+startups <- janitor::clean_names(startups)
+
+lm(profit ~ ., data = startups)
+```
+
+
+
+
+
+
+
+

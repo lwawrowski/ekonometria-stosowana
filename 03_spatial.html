@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Applied econometrics</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="© Łukasz Wawrowski" />
+    <script src="libs/header-attrs-2.5/header-attrs.js"></script>
+    <link rel="stylesheet" href="default.css" type="text/css" />
+    <link rel="stylesheet" href="default-fonts.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Applied econometrics
+## Spatial modelling
+### © Łukasz Wawrowski
+
+---
+
+
+
+
+# Introduction
+
+[Geocomputation with R](https://geocompr.robinlovelace.net/)
+
+[CRAN Task View: Analysis of Spatial Data](https://cran.r-project.org/web/views/Spatial.html)
+
+[Ekonometria i statystyka przestrzenna z wykorzystaniem program R CRAN](https://cedewu.pl/Ekonometria-i-statystyka-przestrzenna-z-wykorzystaniem-program-R-CRAN-CD-wyd-II-p225)
+
+[Search and Retrieve Spatial Data from 'GUGiK'](https://cran.r-project.org/web/packages/rgugik/index.html)
+
+[Data about boundaries in Poland](http://www.gugik.gov.pl/pzgik/dane-bez-oplat/dane-z-panstwowego-rejestru-granic-i-powierzchni-jednostek-podzialow-terytorialnych-kraju-prg)
+
+---
+
+# TERYT code - Poznań commune
+
+full TERYT: `023016264011`
+
+simple TERYT: `3004011`
+
+- `02` - macroregion id (6)
+
+- `30` - voivodeship id (16)
+
+- `1` - region id (2 - masovian region , 1 - the rest of country)
+
+- `62` - subregion id (73)
+
+- `64` - county id (380)
+
+- `01` - commune id (2477)
+
+- `1` - type of commune
+
+---
+
+# sf package
+
+[sf: Simple Features for R](https://cran.r-project.org/web/packages/sf/index.html)
+
+.pull-left[
+
+
+```r
+library(rgugik)
+library(sf)
+
+voivodeship &lt;- voivodeship_names
+
+voivodeship_geom &lt;- borders_get(TERYT = voivodeship$TERC)
+
+plot(voivodeship_geom)
+```
+
+]
+
+.pull-right[
+
+![](03_spatial_files/figure-html/unnamed-chunk-3-1.png)&lt;!-- --&gt;
+
+]
+
+---
+
+# sf + ggplot
+
+.pull-left[
+
+
+```r
+library(tidyverse)
+library(ggthemes)
+
+ggplot(voivodeship_geom, aes(geometry = geometry)) + 
+  geom_sf() + 
+  theme_map()
+```
+
+]
+
+.pull-right[
+
+![](03_spatial_files/figure-html/unnamed-chunk-5-1.png)&lt;!-- --&gt;
+
+]
+
+---
+
+# Spatial data at counties level
+
+Do NOT run - it takes few minutes to download data.
+
+
+```r
+library(rgugik)
+
+counties &lt;- county_names
+
+counties_geom &lt;- borders_get(TERYT = counties$TERYT)
+
+save(counties_geom, file = "data/counties_geom.rda")
+```
+
+Download `counties_geom.rda` from moodle.
+
+
+---
+
+# Data
+
+`data_counties.xlsx`
+
+- TERYT
+
+- population
+
+- number_500plus - number of children in 500+ programme
+
+- unemployment_rate
+
+- unemployment_rate100 - relative unemployment rate (Poland = 100%)
+
+- average_salary
+
+- average_salary100 - relative average salary (Poland = 100%)
+
+- capital_distance - distance to capital of voivodeship
+
+---
+
+# spdep package
+
+[spdep: Spatial Dependence: Weighting Schemes, Statistics](https://cran.r-project.org/web/packages/spdep/index.html)
+
+Neighbors list and matrix
+
+- `poly2nb` - creates a neighbors list based on polygon list
+
+- `nb2listw` - calculates spatial weights for neighbors lists
+
+- `nb2mat` - calculates spatial weights matrix for neighbors lists
+
+Spatial autocorrelation measures
+
+- `moran` - Moran's I statistic
+
+- `geary` - Geary's C statistic
+
+[spatialreg: Spatial Regression Analysis](https://cran.r-project.org/web/packages/spatialreg/index.html)
+
+---
+
+# Moran I
+
+`$$I=\frac{\sum_i\sum_j w_{ij}(x_i-\bar{x})(x_j-\bar{x})}{\frac{1}{n}\sum_i (x_j-\bar{x})^2\sum_i\sum_j w_{ij}}$$`
+
+where:
+
+- `\(x_i\)` is value in region `\(i\)`, 
+- `\(\bar{x}\)` is average in all regions, 
+- `\(n\)` - number of regions, 
+- `\(w_{ij}\)` - element of spatial weights from neighbor matrix.
+
+---
+
+# Moran I
+
+![](img/moran.png)
+
+[Źródło](https://www.cambridge.org/core/books/spatial-analysis-methods-and-practice/spatial-autocorrelation/F6A01B574C69076F28318445C33397E4)
+
+---
+
+# Moran plot
+
+Spatial lag - a weighted sum of the values observed at neighboring locations, since the non-neighbors are not included.
+
+Dependency between region and neighbors
+
+|     | Low values in neighbors | High values in neighbors |
+|-----|-------------------------|--------------------------|
+|High value in region | Negative spatial autocorrelation | Positive spatial autocorrelation |
+|Low value in region | Positive spatial autocorrelation | Negative spatial autocorrelation |
+
+---
+
+# spatialreg package
+
+Spatial models
+
+- `lagsarlm` - spatial autoregressive lag model
+
+- `errorsarlm` - spatial autoregressive error model
+
+---
+
+# Spatial autoregressive lag model
+
+`$$y = \rho Wy + X\beta + e$$`
+
+where:
+
+- `\(\rho\)` - spatial autocorrelation coefficient,
+- `\(Wy\)` - spatial lagged dependent variable,
+- `\(X\)` - covariates matrix,
+- `\(\beta\)` - vector of regression coefficients,
+- `\(e\)` - random error.
+
+---
+
+# Spatial autoregressive error model
+
+`$$y = X\beta + e$$`
+`$$e=\lambda We+\xi$$`
+
+where:
+
+- `\(\lambda\)` - spatial autocorrelation coefficient,
+- `\(We\)` - spatial lagged residual,
+- `\(X\)` - covariates matrix,
+- `\(\beta\)` - vector of regression coefficients,
+- `\(\xi\)` - random error.
+
+---
+
+# Models assesment
+
+- AIC
+
+- Moran test
+
+---
+
+class: center, middle, inverse
+
+# Questions?
+
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"ratio": "16:9",
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
